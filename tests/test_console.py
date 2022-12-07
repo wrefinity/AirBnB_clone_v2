@@ -2,20 +2,21 @@
 """unittest module for the console"""
 import json
 import MySQLdb
+import sys
+sys.path.insert(0, '/root/AirBnB_clone_v2')
 from os import getenv
 import sqlalchemy
 import unittest
 from io import StringIO
 from unittest.mock import patch
-
+from unittest import TestCase
 from console import HBNBCommand
 from models import storage
 from models.base_model import BaseModel
 from models.user import User
-from tests import clear_stream
 
 
-class TestHBNBCommand(unittest.TestCase):
+class TestHBNBCommand(TestCase):
     """Tst class for the HBNBCommand class.
     """
     @unittest.skipIf(
@@ -26,15 +27,12 @@ class TestHBNBCommand(unittest.TestCase):
             cons_cmd = HBNBCommand()
             cons_cmd.onecmd('create City name="Lagos"')
             tst_id = std.getvalue().strip()
-            clear_stream(std)
             self.assertIn('City.{}'.format(tst_id), storage.all().keys())
             cons_cmd.onecmd('show City {}'.format(tst_id))
             self.assertIn("'name': 'Lagos'", std.getvalue().strip())
-            clear_stream(std)
             cons_cmd.onecmd('create User name="wrash" age=27 height=8.1')
             tst_id = std.getvalue().strip()
             self.assertIn('User.{}'.format(tst_id), storage.all().keys())
-            clear_stream(std)
             cons_cmd.onecmd('show User {}'.format(tst_id))
             self.assertIn("'name': 'wrash'", std.getvalue().strip())
             self.assertIn("'age': 27", std.getvalue().strip())
@@ -49,7 +47,6 @@ class TestHBNBCommand(unittest.TestCase):
             cons_cmd = HBNBCommand()
             with self.assertRaises(sqlalchemy.exc.OperationalError):
                 cons_cmd.onecmd('create User')
-            clear_stream(std)
             cons_cmd.onecmd(
                 'create User email="wrash@gmail.com" password="12345"')
             tst_id = std.getvalue().strip()
@@ -103,7 +100,6 @@ class TestHBNBCommand(unittest.TestCase):
             )
             cursor = db_con.cursor()
             cursor.execute('SELECT * FROM users WHERE id="{}"'.format(obj.id))
-            clear_stream(std)
             cons_cmd.onecmd('show User {}'.format(obj.id))
             result = cursor.fetchone()
             self.assertTrue(result is not None)
@@ -133,11 +129,9 @@ class TestHBNBCommand(unittest.TestCase):
             result = cursor.fetchone()
             prev_count = int(result[0])
             cons_cmd.onecmd('create State name="Lagos"')
-            clear_stream(std)
             cons_cmd.onecmd('count State')
             cnt = std.getvalue().strip()
             self.assertEqual(int(cnt), prev_count + 1)
-            clear_stream(std)
             cons_cmd.onecmd('count State')
             cursor.close()
             db_con.close()
