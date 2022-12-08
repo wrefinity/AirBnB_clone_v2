@@ -1,19 +1,19 @@
 #!/usr/bin/python3
 """unittest module for the console"""
+from models.user import User
+from models.base_model import BaseModel
+from models import storage
+from console import HBNBCommand
+from unittest import TestCase
+from unittest.mock import patch
+from io import StringIO
+import unittest
+import sqlalchemy
+from os import getenv
 import json
 import MySQLdb
 import sys
 sys.path.insert(0, '/root/AirBnB_clone_v2')
-from os import getenv
-import sqlalchemy
-import unittest
-from io import StringIO
-from unittest.mock import patch
-from unittest import TestCase
-from console import HBNBCommand
-from models import storage
-from models.base_model import BaseModel
-from models.user import User
 
 
 class TestHBNBCommand(TestCase):
@@ -51,11 +51,11 @@ class TestHBNBCommand(TestCase):
                 'create User email="wrash@gmail.com" password="12345"')
             tst_id = std.getvalue().strip()
             db_con = MySQLdb.connect(
-                host = getenv('HBNB_MYSQL_HOST'),
+                host=getenv('HBNB_MYSQL_HOST'),
                 port=3306,
-                user = getenv('HBNB_MYSQL_USER'),
-                passwd = getenv('HBNB_MYSQL_PWD'),
-                db = getenv('HBNB_MYSQL_DB')
+                user=getenv('HBNB_MYSQL_USER'),
+                passwd=getenv('HBNB_MYSQL_PWD'),
+                db=getenv('HBNB_MYSQL_DB')
             )
             cursor = db_con.cursor()
             cursor.execute('SELECT * FROM users WHERE id="{}"'.format(tst_id))
@@ -75,11 +75,11 @@ class TestHBNBCommand(TestCase):
             cons_cmd = HBNBCommand()
             obj = User(email="wrash@gmail.com", password="12345")
             db_con = MySQLdb.connect(
-                host = getenv('HBNB_MYSQL_HOST'),
+                host=getenv('HBNB_MYSQL_HOST'),
                 port=3306,
-                user = getenv('HBNB_MYSQL_USER'),
-                passwd = getenv('HBNB_MYSQL_PWD'),
-                db = getenv('HBNB_MYSQL_DB')
+                user=getenv('HBNB_MYSQL_USER'),
+                passwd=getenv('HBNB_MYSQL_PWD'),
+                db=getenv('HBNB_MYSQL_DB')
             )
             cursor = db_con.cursor()
             cursor.execute('SELECT * FROM users WHERE id="{}"'.format(obj.id))
@@ -92,11 +92,11 @@ class TestHBNBCommand(TestCase):
             )
             obj.save()
             db_con = MySQLdb.connect(
-                host = getenv('HBNB_MYSQL_HOST'),
+                host=getenv('HBNB_MYSQL_HOST'),
                 port=3306,
-                user = getenv('HBNB_MYSQL_USER'),
-                passwd = getenv('HBNB_MYSQL_PWD'),
-                db = getenv('HBNB_MYSQL_DB')
+                user=getenv('HBNB_MYSQL_USER'),
+                passwd=getenv('HBNB_MYSQL_PWD'),
+                db=getenv('HBNB_MYSQL_DB')
             )
             cursor = db_con.cursor()
             cursor.execute('SELECT * FROM users WHERE id="{}"'.format(obj.id))
@@ -118,11 +118,11 @@ class TestHBNBCommand(TestCase):
         with patch('sys.stdout', new=StringIO()) as std:
             cons_cmd = HBNBCommand()
             db_con = MySQLdb.connect(
-                host = getenv('HBNB_MYSQL_HOST'),
-                port = 3306,
-                user = getenv('HBNB_MYSQL_USER'),
-                passwd = getenv('HBNB_MYSQL_PWD'),
-                db = getenv('HBNB_MYSQL_DB')
+                host=getenv('HBNB_MYSQL_HOST'),
+                port=3306,
+                user=getenv('HBNB_MYSQL_USER'),
+                passwd=getenv('HBNB_MYSQL_PWD'),
+                db=getenv('HBNB_MYSQL_DB')
             )
             cursor = db_con.cursor()
             cursor.execute('SELECT COUNT(*) FROM states;')
