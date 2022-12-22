@@ -1,45 +1,49 @@
 #!/usr/bin/python3
 """"Fabric script that distributes an archive to web servers"""
 
+import os.path
 from fabric.api import *
-import os
+from fabric.operations import run, put, sudo
 
 env.hosts = ['54.157.144.57', '3.85.148.165']
+env.user = 'ubuntu'
+env.key_filename = '~/.ssh/alx_server'
 
 
 def do_deploy(archive_path):
-    """Archive distributor"""
+    """ distribute archive to a web server"""
+    if (os.path.isfile(archive_path) is False):
+        return False
+
     try:
-        try:
-            if os.path.exists(archive_path):
-                arc_tgz = archive_path.split("/")
-                arg_save = arc_tgz[1]
-                arc_tgz = arc_tgz[1].split('.')
-                arc_tgz = arc_tgz[0]
+        new_comp = archive_path.split("/")[-1]
+        new_folder = ("/data/web_static/releases/" + new_comp.split(".")[0])
 
-                """Upload archive to the server"""
-                put(archive_path, '/tmp')
+        # push archive to the /tmp/ directory of the web server
+        put(archive_path, "/tmp/")
 
-                """Save folder paths in variables"""
-                uncomp_fold = '/data/web_static/releases/{}'.format(arc_tgz)
-                tmp_location = '/tmp/{}'.format(arg_save)
+        # Uncompress the archive to the folder /data/web_static/releases/<archive filename
+        # without extension> on the web server
+        run("sudo mkdir -p {}".format(new_folder))
+        run("sudo tar -xzf /tmp/{} -C {}".
+            format(new_comp, new_folder))
 
-                """Run remote commands on the server"""
-                run('mkdir -p {}'.format(uncomp_fold))
-                run('tar -xvzf {} -C {}'.format(tmp_location, uncomp_fold))
-                run('rm {}'.format(tmp_location))
-                run('mv {}/web_static/* {}'.format(uncomp_fold, uncomp_fold))
-                run('rm -rf {}/web_static'.format(uncomp_fold))
-                run('rm -rf /data/web_static/current')
-                run('ln -sf {} /data/web_static/current'.format(uncomp_fold))
-                run('sudo service nginx restart')
-                return True
-            else:
-                print('File does not exist')
-                return False
-        except Exception as err:
-            print(err)
-            return False
-    except Exception:
-        print('Error')
+        # delete the archive created from the web server
+        run("sudo rm /tmp/{}".format(new_comp))
+
+	# move contents into host web_static
+        run("sudo mv {}/web_static/* {}/".format(new_folder, new_folder))
+
+        # remove extra  web_static dir
+        run("sudo rm -rf {}/web_static".format(new_folder))
+
+        # Delete the symbolic link /data/web_static/current from the web server
+        run('sudo rm -rf /data/web_static/current')
+
+        # Create a new the symbolic link /data/web_static/current on the web server,
+        # linked to the new version of your code (/data/web_static/releases/<archive filename without extension>)
+        run("sudo ln -s {} /data/web_static/current".format(new_folder))
+
+        return True
+    except:
         return False
